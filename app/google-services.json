@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "720934736376",
+    "project_id": "nahid-workspace",
+    "storage_bucket": "nahid-workspace.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:720934736376:android:89e4b36042cd918013060d",
+        "android_client_info": {
+          "package_name": "com.hasan.collabworkspace"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8wuJeCf3_2GvHrLhY8mEd_MWnAiCMJ_0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
