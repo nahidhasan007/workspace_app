@@ -4,44 +4,51 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.activity.viewModels
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.savedstate.SavedStateRegistryOwner
+import com.hasan.collabworkspace.presentation.workspace.WorkspaceScreen
+import com.hasan.collabworkspace.presentation.workspace.WorkspaceViewModel
 import com.hasan.collabworkspace.ui.theme.CollabworkspaceTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val app = application as CollabWorkspaceApp
+        
+        val viewModel: WorkspaceViewModel by viewModels {
+            WorkspaceViewModelFactory(app, this)
+        }
+
         setContent {
             CollabworkspaceTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                WorkspaceScreen(viewModel = viewModel)
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CollabworkspaceTheme {
-        Greeting("Android")
+class WorkspaceViewModelFactory(
+    private val app: CollabWorkspaceApp,
+    owner: SavedStateRegistryOwner
+) : AbstractSavedStateViewModelFactory(owner, null) {
+    override fun <T : ViewModel> create(
+        key: String,
+        modelClass: Class<T>,
+        handle: SavedStateHandle
+    ): T {
+        if (modelClass.isAssignableFrom(WorkspaceViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return WorkspaceViewModel(
+                useCases = app.useCases,
+                repository = app.repository,
+                savedStateHandle = handle
+            ) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

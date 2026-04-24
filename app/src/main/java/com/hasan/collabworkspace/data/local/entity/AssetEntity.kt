@@ -7,19 +7,11 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "assets",
-    foreignKeys = [
-        ForeignKey(
-            entity = NoteEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["noteId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
-    indices = [Index("noteId")]
+    indices = [Index("tabId")]
 )
 data class AssetEntity(
     @PrimaryKey val id: String,
-    val noteId: String,
+    val tabId: String,
     val imageUrl: String,
     val x: Float,
     val y: Float,

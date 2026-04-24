@@ -32,8 +32,8 @@ interface WorkspaceDao {
     suspend fun clearNotePendingSync(noteId: String)
 
     // --- Assets ---
-    @Query("SELECT * FROM assets WHERE noteId = :noteId AND isDeleted = 0")
-    fun observeAssetsForNote(noteId: String): Flow<List<AssetEntity>>
+    @Query("SELECT * FROM assets WHERE tabId = :tabId AND isDeleted = 0")
+    fun observeAssetsByTab(tabId: String): Flow<List<AssetEntity>>
 
     @Query("SELECT * FROM assets WHERE id = :assetId")
     suspend fun getAssetById(assetId: String): AssetEntity?
