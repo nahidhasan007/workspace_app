@@ -65,6 +65,9 @@ class WorkspaceRepositoryImpl(
 
     // --- Remote Sync ---
     override suspend fun startListeningToRemoteChanges(tabId: String) {
+        // [LOCAL ONLY MODE] Temporarily disabled remote listening
+        return
+        
         scope.launch {
             try {
                 remote?.observeNotes(tabId)?.collect { remoteNotes ->
@@ -108,6 +111,9 @@ class WorkspaceRepositoryImpl(
     }
 
     override suspend fun syncPendingChanges() {
+        // [LOCAL ONLY MODE] Temporarily disabled background sync
+        return
+        
         val pendingNotes = dao.getPendingNotes()
         pendingNotes.forEach { entity ->
             try {
@@ -140,6 +146,9 @@ class WorkspaceRepositoryImpl(
 
     // --- Helpers ---
     private fun pushNoteSafely(noteId: String) {
+        // [LOCAL ONLY MODE] Skip remote push
+        return
+        
         scope.launch {
             val entity = dao.getNoteById(noteId) ?: return@launch
             if (entity.isPendingSync) {
@@ -154,6 +163,9 @@ class WorkspaceRepositoryImpl(
     }
 
     private fun pushAssetSafely(assetId: String) {
+        // [LOCAL ONLY MODE] Skip remote push
+        return
+        
         scope.launch {
             val entity = dao.getAssetById(assetId) ?: return@launch
             if (entity.isPendingSync) {
