@@ -3,11 +3,17 @@ package com.hasan.collabworkspace.presentation.workspace.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,30 +33,32 @@ import com.hasan.collabworkspace.domain.model.Note
 fun NoteBlock(
     note: Note,
     onContentChange: (String) -> Unit,
-    onDragStart: () -> Unit,
-    onDragEnd: () -> Unit,
-    onDrag: (Float) -> Unit // Delta Y for reordering
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit
 ) {
-    var isDragging by remember { mutableStateOf(false) }
-
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp, horizontal = 16.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(if (isDragging) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.surface)
             .border(
                 width = 1.dp,
-                color = if (isDragging) MaterialTheme.colorScheme.primary else Color.Transparent,
+                color = MaterialTheme.colorScheme.outlineVariant,
                 shape = RoundedCornerShape(8.dp)
             )
-            .pointerInput(Unit) {
-                // Drag handle for reordering (usually we'd have a specific icon handle, but here we'll drag the whole block if long-pressed or something, but let's keep it simple: drag on the block)
-                // Note: BasicTextField consumes some gestures. A dedicated drag handle is better.
-                // For simplicity, we just pass the drag gesture up.
-            }
-            .padding(16.dp)
+            .padding(8.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
+        Column {
+            IconButton(onClick = onMoveUp) {
+                Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Move Up")
+            }
+            IconButton(onClick = onMoveDown) {
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Move Down")
+            }
+        }
+        
         BasicTextField(
             value = note.content,
             onValueChange = onContentChange,
@@ -58,7 +66,9 @@ fun NoteBlock(
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp)
         )
     }
 }

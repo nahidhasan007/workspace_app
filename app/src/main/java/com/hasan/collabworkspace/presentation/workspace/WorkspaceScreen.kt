@@ -18,10 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.hasan.collabworkspace.domain.model.Asset
 import com.hasan.collabworkspace.domain.model.Note
+import com.hasan.collabworkspace.presentation.ui.theme.CollabworkspaceTheme
 import com.hasan.collabworkspace.presentation.workspace.components.AssetBlock
 import com.hasan.collabworkspace.presentation.workspace.components.NoteBlock
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,11 +56,11 @@ fun WorkspaceScreen(
                 }
             )
         }
-    ) { paddingValues ->
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(innerPadding)
                 .pointerInput(Unit) {
                     awaitEachGesture {
                         awaitFirstDown()
@@ -72,10 +75,12 @@ fun WorkspaceScreen(
                     }
                 }
         ) {
-            // Notes (List View)
+            // Notion-style vertical document
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 100.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .zIndex(0f)
             ) {
                 items(state.notes.sortedBy { it.orderIndex }, key = { it.id }) { note ->
                     NoteBlock(
@@ -83,21 +88,52 @@ fun WorkspaceScreen(
                         onContentChange = { newContent ->
                             viewModel.handleIntent(WorkspaceIntent.UpdateNoteContent(note.id, newContent))
                         },
-                        onDragStart = { /* Implement detailed D&D */ },
-                        onDragEnd = { /* Implement detailed D&D */ },
-                        onDrag = { /* Implement detailed D&D */ }
+                        onMoveUp = {
+                            val currentIndex = state.notes.indexOf(note)
+                            if (currentIndex > 0) {
+                                val prevNote = state.notes[currentIndex - 1]
+                                // Swap order indices
+                                val tempIndex = note.orderIndex
+                                viewModel.handleIntent(WorkspaceIntent.MoveNote(note.id, prevNote.orderIndex))
+                                viewModel.handleIntent(WorkspaceIntent.MoveNote(prevNote.id, tempIndex))
+                            }
+                        },
+                        onMoveDown = {
+                            val currentIndex = state.notes.indexOf(note)
+                            if (currentIndex < state.notes.size - 1) {
+                                val nextNote = state.notes[currentIndex + 1]
+                                val tempIndex = note.orderIndex
+                                viewModel.handleIntent(WorkspaceIntent.MoveNote(note.id, nextNote.orderIndex))
+                                viewModel.handleIntent(WorkspaceIntent.MoveNote(nextNote.id, tempIndex))
+                            }
+                        }
                     )
                 }
             }
 
-            // Assets (Floating Canvas Elements)
-            state.assets.forEach { asset ->
-                AssetBlock(
-                    asset = asset,
-                    onTransform = { x, y, rotation, scale ->
-                        viewModel.handleIntent(WorkspaceIntent.TransformAsset(asset.id, x, y, rotation, scale))
-                    }
-                )
+            // Figma-style absolute positioned assets (Overlay)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .zIndex(1f)
+            ) {
+                state.assets.forEach { asset ->
+                    AssetBlock(
+                        asset = asset,
+                        onTransform = { x, y, rotation, scale ->
+                            viewModel.handleIntent(
+                                WorkspaceIntent.TransformAsset(
+                                    asset.id,
+                                    x,
+                                    y,
+                                    rotation,
+                                    scale
+                                )
+                            )
+                        }
+                    )
+                }
             }
 
             // Debug HUD
