@@ -5,6 +5,7 @@ data class NoteDto(
     val tabId: String = "",
     val content: String = "",
     val orderIndex: Double = 0.0,
+    val createdAt: Long = 0L,
     val lastModified: Long = 0L,
     val version: Int = 0,
     val isDeleted: Boolean = false

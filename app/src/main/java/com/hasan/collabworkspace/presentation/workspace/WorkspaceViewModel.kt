@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.hasan.collabworkspace.domain.repository.WorkspaceRepository
 import com.hasan.collabworkspace.domain.usecase.WorkspaceUseCases
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +24,7 @@ class WorkspaceViewModel(
 
     private var observeJob: Job? = null
     private var syncJob: Job? = null
+    private var debounceJob: Job? = null
 
     init {
         // Restore active tab from SavedStateHandle on process death recovery
@@ -93,8 +95,22 @@ class WorkspaceViewModel(
     }
 
     private fun updateNoteContent(noteId: String, content: String) {
-        val note = _state.value.notes.find { it.id == noteId } ?: return
-        viewModelScope.launch { useCases.saveNote(note.copy(content = content)) }
+        // 1. Update UI immediately for "responsive" feel
+        _state.update { currentState ->
+            currentState.copy(
+                notes = currentState.notes.map { 
+                    if (it.id == noteId) it.copy(content = content) else it 
+                }
+            )
+        }
+
+        // 2. Debounce database save to prevent stuttering/flicker during typing
+        debounceJob?.cancel()
+        debounceJob = viewModelScope.launch {
+            delay(500L) // Wait 500ms after last keystroke
+            val note = _state.value.notes.find { it.id == noteId } ?: return@launch
+            useCases.saveNote(note.copy(content = content, lastModified = System.currentTimeMillis()))
+        }
     }
 
     private fun moveNote(noteId: String, newOrderIndex: Double) {

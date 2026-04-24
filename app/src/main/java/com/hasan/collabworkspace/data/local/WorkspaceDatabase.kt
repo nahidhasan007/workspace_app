@@ -8,7 +8,7 @@ import com.hasan.collabworkspace.data.local.entity.NoteEntity
 
 @Database(
     entities = [NoteEntity::class, AssetEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class WorkspaceDatabase : RoomDatabase() {

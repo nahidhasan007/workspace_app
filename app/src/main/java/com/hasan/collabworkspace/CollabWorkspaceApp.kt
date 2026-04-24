@@ -23,7 +23,8 @@ class CollabWorkspaceApp : Application() {
             this,
             WorkspaceDatabase::class.java,
             "workspace_db"
-        ).build()
+        ).fallbackToDestructiveMigration()
+            .build()
 
         // Init Firestore (with fallback for purely local run)
         var firestoreDataSource: FirestoreDataSource? = null

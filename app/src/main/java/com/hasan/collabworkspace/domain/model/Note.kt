@@ -5,6 +5,7 @@ data class Note(
     val tabId: String,
     val content: String,
     val orderIndex: Double,
+    val createdAt: Long,
     val lastModified: Long,
     val version: Int
 )

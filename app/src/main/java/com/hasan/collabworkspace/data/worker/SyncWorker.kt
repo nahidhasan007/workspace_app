@@ -3,18 +3,17 @@ package com.hasan.collabworkspace.data.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.hasan.collabworkspace.domain.repository.WorkspaceRepository
+import com.hasan.collabworkspace.CollabWorkspaceApp
 
 class SyncWorker(
     appContext: Context,
-    workerParams: WorkerParameters,
-    // Note: In a real app, WorkspaceRepository would be injected via Hilt or Koin
-    // For this example without DI framework configured yet, we assume it's passed or retrieved
-    // Using a factory or service locator.
-    private val repository: WorkspaceRepository
+    workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
+        val app = applicationContext as? CollabWorkspaceApp ?: return Result.failure()
+        val repository = app.repository
+
         return try {
             // Push all pending local changes to Firebase
             repository.syncPendingChanges()

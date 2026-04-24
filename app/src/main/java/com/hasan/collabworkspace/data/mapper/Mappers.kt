@@ -15,6 +15,7 @@ fun NoteEntity.toDomain(): Note {
         tabId = tabId,
         content = content,
         orderIndex = orderIndex,
+        createdAt = createdAt,
         lastModified = lastModified,
         version = version
     )
@@ -26,6 +27,7 @@ fun Note.toEntity(isPendingSync: Boolean = true): NoteEntity {
         tabId = tabId,
         content = content,
         orderIndex = orderIndex,
+        createdAt = createdAt,
         lastModified = lastModified,
         version = version,
         isDeleted = false,
@@ -39,6 +41,7 @@ fun NoteDto.toEntity(isPendingSync: Boolean = false): NoteEntity {
         tabId = tabId,
         content = content,
         orderIndex = orderIndex,
+        createdAt = createdAt,
         lastModified = lastModified,
         version = version,
         isDeleted = isDeleted,
@@ -52,6 +55,7 @@ fun NoteEntity.toDto(): NoteDto {
         tabId = tabId,
         content = content,
         orderIndex = orderIndex,
+        createdAt = createdAt,
         lastModified = lastModified,
         version = version,
         isDeleted = isDeleted

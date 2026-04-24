@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface WorkspaceDao {
 
     // --- Notes ---
-    @Query("SELECT * FROM notes WHERE tabId = :tabId AND isDeleted = 0 ORDER BY orderIndex ASC")
+    @Query("SELECT * FROM notes WHERE tabId = :tabId AND isDeleted = 0 ORDER BY orderIndex ASC, createdAt ASC")
     fun observeNotesByTab(tabId: String): Flow<List<NoteEntity>>
 
     @Query("SELECT * FROM notes WHERE id = :noteId")
@@ -49,4 +49,11 @@ interface WorkspaceDao {
 
     @Query("UPDATE assets SET isPendingSync = 0 WHERE id = :assetId")
     suspend fun clearAssetPendingSync(assetId: String)
+
+    // Atomic transaction for clearing multiple sync flags
+    @Transaction
+    suspend fun clearBatchPendingSync(noteIds: List<String>, assetIds: List<String>) {
+        noteIds.forEach { clearNotePendingSync(it) }
+        assetIds.forEach { clearAssetPendingSync(it) }
+    }
 }
