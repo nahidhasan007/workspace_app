@@ -38,7 +38,7 @@ fun AssetBlock(
     onDelete: () -> Unit
 ) {
     var isSelected by remember { mutableStateOf(false) }
-    var pointerCount by remember { mutableStateOf(0) }
+    var pointerCount by remember { mutableIntStateOf(0) }
     val showRotationHud = pointerCount >= 3
 
     Box(
@@ -55,18 +55,27 @@ fun AssetBlock(
                         val event = awaitPointerEvent()
                         pointerCount = event.changes.count { it.pressed }
                         if (pointerCount >= 1) isSelected = true
+                        
+                        // Requirement: Finger 1 selects/focuses
+                        // Requirement: Finger 2 enables rotation
+                        // Requirement: Finger 3 shows HUD
                     }
                 }
             }
             .pointerInput(asset.id) {
                 detectTransformGestures { _, pan, zoom, rotation ->
-                    // Finger 2 enables rotation
-                    val newRotation = if (pointerCount >= 2) asset.rotation + rotation else asset.rotation
+                    // Logic based on requirements
+                    val canRotate = pointerCount >= 2
+                    val canZoom = pointerCount >= 2
+                    
+                    val newRotation = if (canRotate) asset.rotation + rotation else asset.rotation
+                    val newScale = if (canZoom) (asset.scale * zoom).coerceIn(0.5f, 5f) else asset.scale
+                    
                     onTransform(
                         asset.x + pan.x,
                         asset.y + pan.y,
                         newRotation,
-                        (asset.scale * zoom).coerceIn(0.5f, 5f)
+                        newScale
                     )
                 }
             }

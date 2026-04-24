@@ -11,14 +11,12 @@ import com.hasan.collabworkspace.domain.usecase.*
 
 class CollabWorkspaceApp : Application() {
 
-    // Manual Dependency Injection container
     lateinit var useCases: WorkspaceUseCases
     lateinit var repository: WorkspaceRepositoryImpl
 
     override fun onCreate() {
         super.onCreate()
 
-        // Init Room Database
         val database = Room.databaseBuilder(
             this,
             WorkspaceDatabase::class.java,
@@ -26,23 +24,20 @@ class CollabWorkspaceApp : Application() {
         ).fallbackToDestructiveMigration()
             .build()
 
-        // Init Firestore (with fallback for purely local run)
         var firestoreDataSource: FirestoreDataSource? = null
         try {
             val firestore = FirebaseFirestore.getInstance()
             firestoreDataSource = FirestoreDataSource(firestore)
         } catch (e: Exception) {
             e.printStackTrace()
-            // Firebase not configured properly, will run purely offline
         }
 
-        // Init Repository
+
         repository = WorkspaceRepositoryImpl(
             dao = database.dao,
             remote = firestoreDataSource
         )
 
-        // Init Use Cases
         useCases = WorkspaceUseCases(
             observeNotes = ObserveNotesUseCase(repository),
             observeAssetsByTab = ObserveAssetsByTabUseCase(repository),
@@ -54,7 +49,6 @@ class CollabWorkspaceApp : Application() {
             resolveConflict = ResolveConflictUseCase(repository)
         )
 
-        // Schedule background sync
         WorkManagerSetup.scheduleSyncWork(this)
     }
 }

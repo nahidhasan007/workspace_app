@@ -1,6 +1,7 @@
 package com.hasan.collabworkspace.presentation.workspace
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.*
@@ -12,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.*
-import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +21,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draganddrop.DragAndDropEvent
+import androidx.compose.ui.draganddrop.DragAndDropTarget
+import androidx.compose.ui.draganddrop.mimeTypes
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
@@ -46,8 +49,38 @@ fun WorkspaceScreen(
         }
     }
 
+    val dndTarget = remember {
+        object : DragAndDropTarget {
+            override fun onDrop(event: DragAndDropEvent): Boolean {
+                // Simplified drop logic for demonstration
+                // In a real app, extract URL or File from event.clipData
+                viewModel.handleIntent(WorkspaceIntent.AddAsset(
+                    Asset(
+                        id = UUID.randomUUID().toString(),
+                        tabId = state.activeTabId,
+                        imageUrl = "", // Fallback to random picsum in AssetBlock
+                        x = 200f,
+                        y = 200f,
+                        rotation = 0f,
+                        scale = 1f,
+                        lastModified = System.currentTimeMillis(),
+                        version = 0
+                    )
+                ))
+                return true
+            }
+        }
+    }
+
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .dragAndDropTarget(
+                shouldStartDragAndDrop = { event -> 
+                    event.mimeTypes().contains("text/plain") || event.mimeTypes().contains("image/*")
+                },
+                target = dndTarget
+            ),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Surface(
